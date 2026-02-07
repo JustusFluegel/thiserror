@@ -184,15 +184,11 @@ fn impl_struct(input: Struct) -> TokenStream {
     let from_impl = input.from_field().map(|from_field| {
         let span = from_field.attrs.from.unwrap().span;
         let backtrace_field = input.distinct_backtrace_field();
+        let location_field = input.distinct_location_field();
         let from = unoptional_type(from_field.ty);
-        let track_caller = input.location_field().map(|_| quote!(#[track_caller]));
+        let track_caller = location_field.as_ref().map(|_| quote!(#[track_caller]));
         let source_var = Ident::new("source", span);
-        let body = from_initializer(
-            from_field,
-            backtrace_field,
-            &source_var,
-            input.location_field(),
-        );
+        let body = from_initializer(from_field, backtrace_field, &source_var, location_field);
         let from_function = quote! {
             #track_caller
             fn from(#source_var: #from) -> Self {
@@ -474,7 +470,7 @@ fn impl_enum(input: Enum) -> TokenStream {
         let from_field = variant.from_field()?;
         let span = from_field.attrs.from.unwrap().span;
         let backtrace_field = variant.distinct_backtrace_field();
-        let location_field = variant.location_field();
+        let location_field = variant.distinct_location_field();
         let variant = &variant.ident;
         let from = unoptional_type(from_field.ty);
         let source_var = Ident::new("source", span);
