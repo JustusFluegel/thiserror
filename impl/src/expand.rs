@@ -287,7 +287,7 @@ fn impl_enum(input: Enum) -> TokenStream {
         None
     };
 
-    let provide_method = if input.has_backtrace() {
+    let provide_method = if input.has_backtrace() || input.has_location() {
         let request = quote!(request);
         let arms = input.variants.iter().map(|variant| {
             let ident = &variant.ident;
